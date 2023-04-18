@@ -11,13 +11,15 @@ sock.listen(5)
 novoSock, endereco = sock.accept()
 print('Conectado com: {} \npronto para repetir'.format(endereco))
 
-while True:
+msg = ''
+
+while msg != 'fim':
     msg = novoSock.recv(1024)
     if not msg:
         break
     else:
         print(str(msg, encoding='utf-8'))
-    if str(msg, encoding='utf-8') != 'quit':
+    if str(msg, encoding='utf-8') != 'fim':
         novoSock.send(msg)
     else:
         break
