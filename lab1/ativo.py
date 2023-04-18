@@ -8,10 +8,10 @@ PORTA = 5000
 sock = socket.socket()
 sock.connect((HOST, PORTA))
 
-print("Envie 'quit' para encerrar")
+print("Envie 'fim' para encerrar")
 
 msg = ''
-while msg != 'quit':
+while msg != 'fim':
     msg = input('envia mensagem: ')
     sock.send(bytes(msg, encoding='utf-8'))
 
