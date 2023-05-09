@@ -1,4 +1,9 @@
-O dicionário fica salvo no disco em um arquivo do formato json `dict.json`, o que nos poupa de implementar os métodos de parsing para salvar e carregar o arquivo do disco, uma vez que já temos tudo implementado na biblioteca `json`do python
+# Laboratório 2
+## Aplicação cliente/servidor básica
+
+Disciplina: Sistemas Distribuídos (ICP-367)
+Professora: Silvana Rossetto
+Instituto de Computação - CCMN - UFRJ
 
 ### Atividade 1
 Objetivo: Projetar a arquitetura de software da solução. A arquitetura de software deverá conter, no mínimo, três componentes distintos:
