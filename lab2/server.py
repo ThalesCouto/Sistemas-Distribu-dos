@@ -48,6 +48,8 @@ def handle_request(clisock, addr):
             res = "Entrada {} removida.".format(value)
 
         clisock.send(bytes(res, encoding='utf8'))
+    elif (operation == '4'):  #
+        pass
 
     clisock.close()
 

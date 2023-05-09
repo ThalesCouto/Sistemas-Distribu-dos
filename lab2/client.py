@@ -44,6 +44,7 @@ while True:
 
     elif(operation == '4'): # end
         sock.close()
+        exit(0)
 
 
     result = str(sock.recv(1024), encoding='utf-8')
