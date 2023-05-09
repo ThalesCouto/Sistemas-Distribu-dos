@@ -9,6 +9,7 @@ Instituto de Computação - CCMN - UFRJ
 
 ### Atividade 1
 Objetivo: Projetar a arquitetura de software da solução. A arquitetura de software deverá conter, no mínimo, três componentes distintos:
+
 (i) acesso e persistência de dados:
 	
  - Realizado na camada que contem a classe do `Dictionary` e fazendo uso a biblioteca `json`, o que nos poupa de reimplementar todas as operações de parsing.
