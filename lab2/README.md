@@ -66,8 +66,7 @@ Roteiro:
 2. Modularizar e documentar o código de forma concisa e clara.
 3. Experimentar a aplicação usando diferentes casos de teste.
 4. Reportar as decisões tomadas em todas as atividades no README do repositório do código.
-5. 
-O servidor deverá ser multiplexado, ou seja, capaz de receber comandos básicos da entrada padrão (incluindo comandos para permitir finalizar o servidor quando não houver clientes ativos e remover uma entrada do dicionário) utilizando a função "select".
+5. O servidor deverá ser multiplexado, ou seja, capaz de receber comandos básicos da entrada padrão (incluindo comandos para permitir finalizar o servidor quando não houver clientes ativos e remover uma entrada do dicionário) utilizando a função "select".
 
 O servidor deverá ser concorrente, ou seja, tratar cada nova conexão de cliente como um novo fluxo de execução e atender as requisições desse cliente dentro do novo fluxo de execução. Para isso, serão criadas threads ou processos filhos.
 
