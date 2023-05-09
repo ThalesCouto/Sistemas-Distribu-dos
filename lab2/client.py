@@ -43,7 +43,7 @@ while True:
         sock.send(bytes(arg2, encoding='utf8'))
 
     elif(operation == '4'): # end
-        pass
+        sock.close()
 
 
     result = str(sock.recv(1024), encoding='utf-8')

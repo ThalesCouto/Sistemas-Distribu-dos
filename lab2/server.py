@@ -1,8 +1,6 @@
-import multiprocessing
+import threading
 import socket, sys, select
 import dict_layer
-
-print(multiprocessing.current_process().pid) # só pra liberar a porta em testes
 
 HOST = ''
 PORTA = 8001
@@ -62,6 +60,7 @@ def handle_stdin(sock):
 
 
 def main():
+    clientes = [] # multiplos clientes serão atendido com uso de threads
     sock = server_init()
     print("Pronto para receber conexões, digite 'exit' para sair.")
     entradas = [sock, sys.stdin]
@@ -70,7 +69,10 @@ def main():
         for pronto in r:
             if pronto == sock:
                 clisock, addr = accept_connection(sock)
-                handle_request(clisock, addr)
+                nu_client = threading.Thread(target=handle_request, args=(clisock, addr))
+                nu_client.start()
+                clientes.append(nu_client)
+
             elif pronto == sys.stdin:
                 handle_stdin(sock)
 

@@ -52,8 +52,11 @@ def generate_sample_dict():
         "um": ["1", "01"],
         "dois": ["2", "4/2"],
         "três": ["3"],
-        "quatro": ["4"],
-        "cinco": ["5"]
+        "quatro": ["4", "IV"],
+        "cinco": ["5"],
+        "sete": ["7", "7.0"],
+        "oito": ["8"],
+        "vinte": ["20", "10+10"]
     }
     json_dict = json.dumps(sample_dict, indent=4)
     with open("dict.json", "w") as outfile:
