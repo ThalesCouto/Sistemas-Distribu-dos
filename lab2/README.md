@@ -2,7 +2,9 @@
 ## Aplicação cliente/servidor básica
 
 Disciplina: Sistemas Distribuídos (ICP-367)
+
 Professora: Silvana Rossetto
+
 Instituto de Computação - CCMN - UFRJ
 
 ### Atividade 1
