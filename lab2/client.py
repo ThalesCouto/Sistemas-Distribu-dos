@@ -1,38 +1,55 @@
-def get_input():
-    filename = input('Insira o nome do arquivo a ser analisado:\t')
-    keyword = input('Insira a palavra a ser contada:\t')
-    return filename, keyword
-
-def file_error(filename):
-    print('arquivo {} não encontrado'.format(filename))
-
-def display_count(filename, keyword, count):
-    print('a palavra \"{}\" aparece {} vezes no arquivo {}'.format(keyword, count, filename))
-
-#Até aqui é uma repetição da camada 1 da atividade 1
-
 import socket
 
 HOST = 'localhost'
 PORTA = 8001
 
-sock = socket.socket()
-sock.connect((HOST, PORTA))
 
-filename, keyword = get_input()
 
-sock.send(bytes(filename, encoding='utf8'))
-sock.recv(1024)
-sock.send(bytes(keyword, encoding='utf8'))
+menu = "Dicionário distribuído!\n" \
+       "1: Busca;\n" \
+       "2: Insere;\n" \
+       "3: Remove;\n" \
+       "4: Encerra.\n"
 
-ok = str(sock.recv(8), encoding='utf8')
-sock.send(bytes(".", encoding='utf8'))
 
-if ok == 'err':
-    file_error(filename)
+while True:
+    sock = socket.socket()
+    sock.connect((HOST, PORTA))
 
-elif ok == 'ok':
-    count = str(sock.recv(8), encoding='utf8')
-    display_count(filename, keyword, count)
+    operation = 0
+    while(operation != '1' and operation != '2' and operation != '3' and operation != '4'):
+        print(menu)
+        operation = input("por favor, selecione uma opção [1-4]:")
 
-sock.close()
+        sock.send(bytes(operation, encoding='utf8'))
+
+    if(operation == '1'): # search
+        arg = input('chave a ser buscada:\t')
+
+        sock.send(bytes(arg, encoding='utf8'))
+
+    elif(operation == '2'): # insertion
+        arg1 = input('chave a ser inserida:\t')
+        sock.send(bytes(arg1, encoding='utf8'))
+
+        arg2 = input('valor a ser inserida:\t')
+        sock.send(bytes(arg2, encoding='utf8'))
+
+    elif(operation == '3'): # removal
+        arg1 = input('Senha de admin:\t')
+        sock.send(bytes(arg1, encoding='utf8'))
+
+        arg2 = input('valor a ser removido:\t')
+        sock.send(bytes(arg2, encoding='utf8'))
+
+    elif(operation == '4'): # end
+        pass
+
+
+    result = str(sock.recv(1024), encoding='utf-8')
+
+
+    print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+          "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+          " >> Resultado da operação:\t", result,"\n\n")
+    sock.close()
