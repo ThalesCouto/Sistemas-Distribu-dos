@@ -21,7 +21,7 @@ while True:
         print(menu)
         operation = input("por favor, selecione uma opção [1-4]:")
 
-        sock.send(bytes(operation, encoding='utf8'))
+    sock.send(bytes(operation, encoding='utf8'))
 
     if(operation == '1'): # search
         arg = input('chave a ser buscada:\t')
