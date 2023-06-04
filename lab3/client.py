@@ -1,56 +1,74 @@
-import socket
+import rpyc
 
-HOST = 'localhost'
-PORTA = 8001
+import json
 
+class Dictionary(rpyc.Service):
+    def __init__(self):
 
+        with open('dict.json') as json_file:
+            self.dict = json.load(json_file)
 
-menu = "Dicionário distribuído!\n" \
-       "1: Busca;\n" \
-       "2: Insere;\n" \
-       "3: Remove;\n" \
-       "4: Encerra.\n"
-
-
-while True:
-    sock = socket.socket()
-    sock.connect((HOST, PORTA))
-
-    operation = 0
-    while(operation != '1' and operation != '2' and operation != '3' and operation != '4'):
-        print(menu)
-        operation = input("por favor, selecione uma opção [1-4]:")
-
-    sock.send(bytes(operation, encoding='utf8'))
-
-    if(operation == '1'): # search
-        arg = input('chave a ser buscada:\t')
-
-        sock.send(bytes(arg, encoding='utf8'))
-
-    elif(operation == '2'): # insertion
-        arg1 = input('chave a ser inserida:\t')
-        sock.send(bytes(arg1, encoding='utf8'))
-
-        arg2 = input('valor a ser inserida:\t')
-        sock.send(bytes(arg2, encoding='utf8'))
-
-    elif(operation == '3'): # removal
-        arg1 = input('Senha de admin:\t')
-        sock.send(bytes(arg1, encoding='utf8'))
-
-        arg2 = input('valor a ser removido:\t')
-        sock.send(bytes(arg2, encoding='utf8'))
-
-    elif(operation == '4'): # end
-        sock.close()
-        exit(0)
+        print(self.dict)
 
 
-    result = str(sock.recv(1024), encoding='utf-8')
+    def load(self):
+        '''load já está sendo feito no construtor'''
+        pass
+
+    def save(self):
+        '''salva dict no disco'''
+        json_dict = json.dumps(self.dict, indent=4)
+        with open("dict.json", "w") as outfile:
+            outfile.write(json_dict)
+
+    def exposed_search(self, key):
+        '''busca key no dicionario e retorna lista com os valores'''
+        ret = self.dict.get(key)
+
+        if(ret == None or ret == []):
+            ret = "chave não encontrada"
+
+        return ret
 
 
-    print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
-          "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
-          " >> Resultado da operação:\t", result,"\n\n")
-    sock.close()
+    def exposed_insert(self, key, value):
+        if key not in self.dict:
+            self.dict[key] = [value]
+        else:
+            self.dict[key].append(value)
+        self.save()
+
+
+    def exposed_delete(self, psswd, value):
+        if(psswd == 'silvana123'):
+            for k in self.dict:
+                for i in self.dict[k]:
+                    if i == value:
+                        self.dict[k].remove(i)
+                        return 'removido'
+            return 'não encontrado'
+        else:
+            return "Senha incorreta"
+
+
+
+        self.save()
+
+
+def generate_sample_dict():
+    sample_dict = {
+        "um": ["1", "01"],
+        "dois": ["2", "4/2"],
+        "três": ["3"],
+        "quatro": ["4", "IV"],
+        "cinco": ["5"],
+        "sete": ["7", "7.0"],
+        "oito": ["8"],
+        "vinte": ["20", "10+10"]
+    }
+    json_dict = json.dumps(sample_dict, indent=4)
+    with open("dict.json", "w") as outfile:
+        outfile.write(json_dict)
+
+
+generate_sample_dict()
