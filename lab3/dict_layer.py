@@ -1,6 +1,8 @@
+import rpyc
+
 import json
 
-class Dictionary():
+class Dictionary(rpyc.Service):
     def __init__(self):
 
         with open('dict.json') as json_file:
@@ -19,7 +21,7 @@ class Dictionary():
         with open("dict.json", "w") as outfile:
             outfile.write(json_dict)
 
-    def search(self, key):
+    def exposed_search(self, key):
         '''busca key no dicionario e retorna lista com os valores'''
         ret = self.dict.get(key)
 
@@ -29,7 +31,7 @@ class Dictionary():
         return ret
 
 
-    def insert(self, key, value):
+    def exposed_insert(self, key, value):
         if key not in self.dict:
             self.dict[key] = [value]
         else:
@@ -37,11 +39,17 @@ class Dictionary():
         self.save()
 
 
-    def delete(self, value):
-        for k in self.dict:
-            for i in self.dict[k]:
-                if i == value:
-                    self.dict[k].remove(i)
+    def exposed_delete(self, psswd, value):
+        if(psswd == 'silvana123'):
+            for k in self.dict:
+                for i in self.dict[k]:
+                    if i == value:
+                        self.dict[k].remove(i)
+                        return 'removido'
+            return 'não encontrado'
+        else:
+            return "Senha incorreta"
+
 
 
         self.save()
