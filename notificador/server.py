@@ -4,6 +4,6 @@ import broker
 
 if __name__ == '__main__':
     server.ThreadedServer(
-        dict_layer.Dictionary,
+        broker.BrokerService,
         hostname='localhost', port=8001
     ).start()
