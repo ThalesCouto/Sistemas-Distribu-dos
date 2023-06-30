@@ -10,6 +10,7 @@ import rpyc # type: ignore
 
 UserId: TypeAlias = int
 
+
 # Aqui pode ser uma função que recebe apenas um Tuple[Topic, Content]
 # ou seja:
 # FnNotify: TypeAlias = Callable[[Tuple[Topic, Content]], None]
@@ -17,17 +18,36 @@ FnNotify: TypeAlias = Callable[[list[Tuple[Topic, Content]]], None]
 
 class BrokerService(rpyc.Service): # type: ignore
     topics: dict = {} #Chave-valor de tópicos, associa um nome ao objeto tópico com aquele nome
-    
+    users: dict = {} #Chave-valor de usuários, associa um nome ao objeto tópico com aquele nome
     # Não é exposed porque só o "admin" tem acesso
     def create_topic(self, id: UserId, topicname: str) -> Topic:
         '''
         Cria novo tópico e adiciona a lista de tópicos
         '''
-        new_topic = Topic(topicname,len(self.topics))
-        self.list_of_topics[topicname] = new_topic # Adiciona tópico ao dicionário de tópicos associado ao nome
+        new_topic = Topic(topicname,len(BrokerService.topics)) #############IMPORTANTE!ESTOU USANDO como variável estática porque 
+                                                                #não sei como funciona o compartilhamento de objetos entre as threads nesse modulo. 
+                                                                # se eles forem capaz de enxergar o mesmo objeto de BrokerService, substituir por self.
+                                                                ################### esses locais estão marcados com #(*)
+
+        BrokerService.topics[topicname] = new_topic # Adiciona tópico ao dicionário de tópicos associado ao nome
         return new_topic
 
-    # Handshake
+    def notify_subscriber(self,id: UserId) -> None:
+        """
+        Notifies the subscribers of a topic about new content.
+        Args:
+            topic: The topic for which to notify the subscribers.
+        """
+        if  id in  BrokerService.users.keys:
+            user = BrokerService.users[id]#(*)
+            fila = user.fila
+            while fila.check_populada():
+                content = fila.obter_mensagem()
+                #TODO entender como vai funcionar o callback para notificar o cliente
+                # if ack:
+                #     fila.limpar_mensagem()
+
+    # # Handshake
 
     def exposed_login(self, username: str) -> Optional[UserId]:
         assert False, "TO BE IMPLEMENTED"
@@ -35,7 +55,11 @@ class BrokerService(rpyc.Service): # type: ignore
     # Query operations
 
     def exposed_get_user_info(self, id: UserId) -> UserInfo:
-        assert False, "TO BE IMPLEMENTED"
+        if  id in  BrokerService.users.keys:#(*)
+            user = BrokerService.users[id]#(*)
+            return user
+        else:
+            return None #TODO Decidir o que retornar em caso de inexistencia
 
     def exposed_list_topics(self) -> list[Topic]:
         '''
@@ -52,9 +76,10 @@ class BrokerService(rpyc.Service): # type: ignore
                 - topic: Tópico a ser públicado
                 - data: Conteudo da publicação
         '''
-        topic = self.list_of_topics[topicname]
+        topic = BrokerService.topics[topicname]#(*)
         content = Content(id,topic,data)
-        topic.fila.adicionar_mensagem(content) #Adiciona mensagem na fila daquele tópico
+        for user in topic.list_subscribers:
+            user.fila.adicionar_mensagem(content) #Adiciona mensagem na fila daquele usuário
         #TODO implementar método para limpar conteudo após certa data(data limite)
         #TODO implementar gestão de para quem a mensagem já foi enviada
 
@@ -69,8 +94,8 @@ class BrokerService(rpyc.Service): # type: ignore
                 - callback: Função de callback do cliente para notificar
         
         '''
-        if topicname in self.list_of_topics.keys:
-            topic = self.list_of_topics[topicname]
+        if topicname in BrokerService.topics.keys:#(*)
+            topic = BrokerService.topics[topicname]#(*)
             if id not in topic.list_subscribers:
                 topic.list_subscribers.append(id)#Alerta da inscrição
                 callback()
@@ -86,8 +111,8 @@ class BrokerService(rpyc.Service): # type: ignore
                 - topic: Tópico a ser públicado
         
         '''
-        if topicname in self.list_of_topics.keys:
-            topic = self.list_of_topics[topicname]
+        if topicname in BrokerService.topics.keys:#(*)
+            topic = BrokerService.topics[topicname]#(*)
             if id in topic.list_subscribers:
                 topic.list_subscribers.remove(id)
         #TODO decidir sobre Função de notify
@@ -101,7 +126,7 @@ class BrokerService(rpyc.Service): # type: ignore
                 - callback: Função de callback do cliente para notificar
         
         '''
-        for topic in  self.list_of_topics.values:
+        for topic in  BrokerService.topics.values:#(*)
             if id not in topic.list_subscribers:
                 topic.list_subscribers.append(id)
                 callback()#Alerta da inscrição
@@ -116,7 +141,7 @@ class BrokerService(rpyc.Service): # type: ignore
                 - topic: Tópico a ser públicado
         
         '''
-        for topic in  self.list_of_topics.values:
+        for topic in  BrokerService.topics.values:#(*)
             if id not in topic.list_subscribers:
                 topic.list_subscribers.remove(id)
         #TODO decidir sobre Função de notify

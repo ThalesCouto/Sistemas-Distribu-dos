@@ -22,11 +22,20 @@ class Fila:
         Retorna a mesnagem na primeira posição da fila
         '''
         try:
-            return self.mensagens.pop(0)
+            return self.mensagens[0]
         except IndexError  as e:
             pass
     
-    def check_vazia(self):
+    def limpar_mensagem(self):
+        '''
+        Limpa a mesnagem na primeira posição da fila
+        '''
+        try:
+            return self.mensagens.pop(0)
+        except IndexError as e:
+            pass
+
+    def check_populada(self):
         '''
         Checa se a fila ta vazia
         '''
