@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from fila import Fila
 import rpyc # type: ignore
 
-UserId: TypeAlias = int
+UserId: TypeAlias = str
 
 
 # Aqui pode ser uma função que recebe apenas um Tuple[Topic, Content]
@@ -31,21 +31,6 @@ class BrokerService(rpyc.Service): # type: ignore
 
         BrokerService.topics[topicname] = new_topic # Adiciona tópico ao dicionário de tópicos associado ao nome
         return new_topic
-
-    def notify_subscriber(self,id: UserId) -> None:
-        """
-        Notifies the subscribers of a topic about new content.
-        Args:
-            topic: The topic for which to notify the subscribers.
-        """
-        if  id in  BrokerService.users.keys:
-            user = BrokerService.users[id]#(*)
-            fila = user.fila
-            while fila.check_populada():
-                content = fila.obter_mensagem()
-                #TODO entender como vai funcionar o callback para notificar o cliente
-                # if ack:
-                #     fila.limpar_mensagem()
 
     # # Handshake
 
@@ -76,13 +61,17 @@ class BrokerService(rpyc.Service): # type: ignore
                 - topic: Tópico a ser públicado
                 - data: Conteudo da publicação
         '''
-        topic = BrokerService.topics[topicname]#(*)
-        content = Content(id,topic,data)
-        for user in topic.list_subscribers:
-            user.fila.adicionar_mensagem(content) #Adiciona mensagem na fila daquele usuário
-        #TODO implementar método para limpar conteudo após certa data(data limite)
-        #TODO implementar gestão de para quem a mensagem já foi enviada
+        topic = BrokerService.topics.get(topicname)
+        if topic is None:
+            return False
 
+        content = Content(id, topic, data)
+        for user_id in topic.list_subscribers:
+            callback = topic.callbacks.get(user_id)
+            if callback is not None:
+                callback([content])
+
+        return True
     # Subscriber operations
 
     def exposed_subscribe_to(self, id: UserId, topicname: str, callback: FnNotify) -> bool:
@@ -98,11 +87,8 @@ class BrokerService(rpyc.Service): # type: ignore
             topic = BrokerService.topics[topicname]#(*)
             if id not in topic.list_subscribers:
                 topic.list_subscribers.append(id)#Alerta da inscrição
-                callback()
-        else:
-            callback()#Alerta que não se inscreveu
-        #TODO decidir funcionamento do callback
-        
+                topic.callbacks[id] = callback
+
     def exposed_unsubscribe_to(self, id: UserId, topicname: str) -> bool:
         '''
         Desinscreve usuário no interesse de um tópico
@@ -115,7 +101,7 @@ class BrokerService(rpyc.Service): # type: ignore
             topic = BrokerService.topics[topicname]#(*)
             if id in topic.list_subscribers:
                 topic.list_subscribers.remove(id)
-        #TODO decidir sobre Função de notify
+                del topic.callbacks[id]
 
 
     def exposed_subscribe_all(self, id: UserId, callback: FnNotify) -> bool:
