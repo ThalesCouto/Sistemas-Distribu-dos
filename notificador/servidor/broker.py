@@ -14,7 +14,7 @@ UserId: TypeAlias = int
 # Aqui pode ser uma função que recebe apenas um Tuple[Topic, Content]
 # ou seja:
 # FnNotify: TypeAlias = Callable[[Tuple[Topic, Content]], None]
-FnNotify: TypeAlias = Callable[[list[Tuple[Topic, Content]]], None]
+FnNotify: TypeAlias = Callable[[list[Content]], None]
 
 class BrokerService(rpyc.Service): # type: ignore
     topics: dict = {} #Chave-valor de tópicos, associa um nome ao objeto tópico com aquele nome
@@ -49,7 +49,7 @@ class BrokerService(rpyc.Service): # type: ignore
 
     # # Handshake
 
-    def exposed_login(self, username: str) -> Optional[UserId]:
+    def exposed_login(self, username: str) -> bool:
         assert False, "TO BE IMPLEMENTED"
 
     # Query operations
@@ -68,7 +68,7 @@ class BrokerService(rpyc.Service): # type: ignore
         return self.list_of_topics.keys
     # Publisher operations
 
-    def exposed_publish(self, id: UserId, topicname: str, data: str) -> None:
+    def exposed_publish(self, id: UserId, topicname: str, data: str) -> bool:
         '''
         Publica novo conteudo em referido tópico
             args:
@@ -85,7 +85,7 @@ class BrokerService(rpyc.Service): # type: ignore
 
     # Subscriber operations
 
-    def exposed_subscribe_to(self, id: UserId, topicname: str, callback: FnNotify) -> Optional[FnNotify]:
+    def exposed_subscribe_to(self, id: UserId, topicname: str, callback: FnNotify) -> bool:
         '''
         Inscreve usuário no interesse de um tópico
             args:
@@ -103,7 +103,7 @@ class BrokerService(rpyc.Service): # type: ignore
             callback()#Alerta que não se inscreveu
         #TODO decidir funcionamento do callback
         
-    def exposed_unsubscribe_to(self, id: UserId, topicname: str) -> Optional[FnNotify]:
+    def exposed_unsubscribe_to(self, id: UserId, topicname: str) -> bool:
         '''
         Desinscreve usuário no interesse de um tópico
             args:
@@ -118,7 +118,7 @@ class BrokerService(rpyc.Service): # type: ignore
         #TODO decidir sobre Função de notify
 
 
-    def exposed_subscribe_all(self, id: UserId, callback: FnNotify) -> Optional[FnNotify]:
+    def exposed_subscribe_all(self, id: UserId, callback: FnNotify) -> bool:
         '''
         Inscreve usuário em todos os tópicos existentes atualmente
             args:
@@ -133,7 +133,7 @@ class BrokerService(rpyc.Service): # type: ignore
         #TODO decidir funcionamento do callback
 
 
-    def exposed_unsubscribe_all(self, id: UserId) -> FnNotify:
+    def exposed_unsubscribe_all(self, id: UserId) -> bool:
         '''
         Desinscreve usuário no interesse de um tópico
             args:

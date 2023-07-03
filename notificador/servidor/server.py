@@ -24,7 +24,8 @@ class Server:
 
         server.ThreadedServer(
             broker.BrokerService,
-            hostname=self.host, port=self.porta
+            hostname=self.host, port=self.porta,
+            protocol_config={'allow_public_attrs': True}
         ).start()
 
 def main():
