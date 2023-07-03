@@ -32,11 +32,37 @@ class BrokerService(rpyc.Service): # type: ignore
         BrokerService.topics[topicname] = new_topic # Adiciona tópico ao dicionário de tópicos associado ao nome
         return new_topic
 
+    def send_queued_messages(self,topic: Topic, subscriber_id: UserId) -> None:
+        callback = topic.callbacks.get(subscriber_id)
+        if callback is not None:
+            queued_messages = BrokerService.users[subscriber_id].fila #Recupera mensagens na fila do usuário
+            callback(queued_messages) #Chama o callback daquele tópico
+            BrokerService.users[subscriber_id].limpar_fila() #Esvazia a fila
+
     # # Handshake
 
     def exposed_login(self, username: str) -> bool:
-        assert False, "TO BE IMPLEMENTED"
+        #Função de login
+        self.userid = username #Seta o nome de usuário dessa instancia do broker pra ser o do usuário
 
+        if username in BrokerService.users.keys:
+            BrokerService.users[username].online = True #Modifica status para online
+        else:
+            BrokerService.users[username] = UserInfo(username) #Cria novo usuário
+            BrokerService.users[username].online = True 
+        # Depois do usuário logar, envia as mensagens na fila
+        user_id = username
+        for topic in BrokerService.topics.values:
+            if user_id in topic.list_subscribers:
+                self.send_queued_messages(topic,user_id) #Envia as mensagens em fila
+
+        return True
+
+    #Sobrescreve a função de desconexão do RPyC
+    def on_disconnect(self):
+        disconnected_user_id = self.userid #Recupera o id do usuário que disconectou
+        if disconnected_user_id in BrokerService.users:
+            BrokerService.users[disconnected_user_id].online = False #Marca como offline
     # Query operations
 
     def exposed_get_user_info(self, id: UserId) -> UserInfo:
@@ -50,7 +76,7 @@ class BrokerService(rpyc.Service): # type: ignore
         '''
         Lista tóicos disponíveis
         '''
-        return self.list_of_topics.keys
+        return BrokerService.topics.keys
     # Publisher operations
 
     def exposed_publish(self, id: UserId, topicname: str, data: str) -> bool:
@@ -67,9 +93,15 @@ class BrokerService(rpyc.Service): # type: ignore
 
         content = Content(id, topic, data)
         for user_id in topic.list_subscribers:
-            callback = topic.callbacks.get(user_id)
-            if callback is not None:
-                callback([content])
+            if user_id in BrokerService.users:
+                            user = BrokerService.users[user_id]
+                            if user.logged_in:
+                                # Usuário ta logado, notifica agora
+                                callback = topic.callbacks.get(user_id)
+                                if callback is not None:
+                                    callback([content])
+            else: #Usuário deslogado, adiciona na fila
+                BrokerService.users[user_id].fila.append(content)
 
         return True
     # Subscriber operations
@@ -86,7 +118,7 @@ class BrokerService(rpyc.Service): # type: ignore
         if topicname in BrokerService.topics.keys:#(*)
             topic = BrokerService.topics[topicname]#(*)
             if id not in topic.list_subscribers:
-                topic.list_subscribers.append(id)#Alerta da inscrição
+                topic.list_subscribers.append(id)
                 topic.callbacks[id] = callback
 
     def exposed_unsubscribe_to(self, id: UserId, topicname: str) -> bool:
@@ -102,32 +134,3 @@ class BrokerService(rpyc.Service): # type: ignore
             if id in topic.list_subscribers:
                 topic.list_subscribers.remove(id)
                 del topic.callbacks[id]
-
-
-    def exposed_subscribe_all(self, id: UserId, callback: FnNotify) -> bool:
-        '''
-        Inscreve usuário em todos os tópicos existentes atualmente
-            args:
-                - id: Id do usuário
-                - callback: Função de callback do cliente para notificar
-        
-        '''
-        for topic in  BrokerService.topics.values:#(*)
-            if id not in topic.list_subscribers:
-                topic.list_subscribers.append(id)
-                callback()#Alerta da inscrição
-        #TODO decidir funcionamento do callback
-
-
-    def exposed_unsubscribe_all(self, id: UserId) -> bool:
-        '''
-        Desinscreve usuário no interesse de um tópico
-            args:
-                - id: Id do usuário
-                - topic: Tópico a ser públicado
-        
-        '''
-        for topic in  BrokerService.topics.values:#(*)
-            if id not in topic.list_subscribers:
-                topic.list_subscribers.remove(id)
-        #TODO decidir sobre Função de notify

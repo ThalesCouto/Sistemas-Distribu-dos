@@ -35,6 +35,12 @@ class Fila:
         except IndexError as e:
             pass
 
+    def limpar_fila(self):
+        '''
+        Limpa a fila inteira
+        '''
+        self.mensagens = []
+
     def check_populada(self):
         '''
         Checa se a fila ta vazia
