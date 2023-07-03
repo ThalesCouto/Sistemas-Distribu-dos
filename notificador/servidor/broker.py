@@ -95,13 +95,13 @@ class BrokerService(rpyc.Service): # type: ignore
         for user_id in topic.list_subscribers:
             if user_id in BrokerService.users:
                             user = BrokerService.users[user_id]
-                            if user.logged_in:
+                            if user.online:
                                 # Usuário ta logado, notifica agora
                                 callback = topic.callbacks.get(user_id)
                                 if callback is not None:
                                     callback([content])
-            else: #Usuário deslogado, adiciona na fila
-                BrokerService.users[user_id].fila.append(content)
+                            else: #Usuário deslogado, adiciona na fila
+                                BrokerService.users[user_id].fila.append(content)
 
         return True
     # Subscriber operations
