@@ -76,7 +76,7 @@ class BrokerService(rpyc.Service): # type: ignore
         return True
 
     #Sobrescreve a função de desconexão do RPyC
-    def on_disconnect(self):
+    def on_disconnect(self, conn, reason):
         '''
         Sobrescreve a função de disconect, quando o usuário interrompe a conexão pega o id e altera o status de online
         '''

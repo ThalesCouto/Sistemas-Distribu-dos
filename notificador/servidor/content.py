@@ -11,12 +11,12 @@ else:
 if IS_NEW_PYTHON:
     @dataclass(frozen=True, kw_only=True, slots=True)
     class Content:
-        author: UserId
-        topic: Topic
+        author: str
+        topic: str
         data: str
 elif not TYPE_CHECKING:
     @dataclass(frozen=True)
     class Content:
-        author: UserId
-        topic: Topic
+        author: str
+        topic: str
         data: str
