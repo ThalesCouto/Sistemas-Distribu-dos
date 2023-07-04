@@ -32,8 +32,12 @@ class BrokerService(rpyc.Service): # type: ignore
         BrokerService.topics[topicname] = new_topic # Adiciona tópico ao dicionário de tópicos associado ao nome
         return new_topic
 
-    def send_queued_messages(self,topic: Topic, subscriber_id: UserId) -> None:
-        callback = topic.callbacks.get(subscriber_id)
+    def send_queued_messages(self, subscriber_id: UserId) -> None:
+        '''
+        Envia todas as mensagens na fila de um usuário
+        '''
+        user = BrokerService.users[subscriber_id]
+        callback = user.callback
         if callback is not None:
             queued_messages = BrokerService.users[subscriber_id].fila #Recupera mensagens na fila do usuário
             callback(queued_messages) #Chama o callback daquele tópico
@@ -42,17 +46,18 @@ class BrokerService(rpyc.Service): # type: ignore
     # # Handshake
 
     def exposed_login(self, id: UserId, callback: FnNotify) -> bool:
+        '''
+        Função para realização de login e definição de função calback
+        '''
         #Função de login
         self.userid = id #Seta o nome de usuário dessa instancia do broker pra ser o do usuário
-
+        #checa se o usuário já esta cadastrado
         if id in BrokerService.users.keys():
             BrokerService.users[id].online = True #Modifica status para online
             BrokerService.users[id].callback = callback
             user_id = id
             # Depois do usuário logar, envia as mensagens na fila
-            for topic in BrokerService.topics.values:
-                if user_id in topic.list_subscribers:
-                    self.send_queued_messages(topic,user_id) #Envia as mensagens em fila
+            self.send_queued_messages(user_id) #Envia as mensagens em fila
         else:
             BrokerService.users[id] = UserInfo(id) #Cria novo usuário
             BrokerService.users[id].callback = callback
@@ -62,6 +67,9 @@ class BrokerService(rpyc.Service): # type: ignore
 
     #Sobrescreve a função de desconexão do RPyC
     def on_disconnect(self):
+        '''
+        Sobrescreve a função de disconect, quando o usuário interrompe a conexão pega o id e altera o status de online
+        '''
         disconnected_user_id = self.userid #Recupera o id do usuário que disconectou
         if disconnected_user_id in BrokerService.users:
             BrokerService.users[disconnected_user_id].online = False #Marca como offline
@@ -99,7 +107,7 @@ class BrokerService(rpyc.Service): # type: ignore
                 user = BrokerService.users[user_id]
                 if user.online:
                     # Usuário ta logado, notifica agora
-                    callback = topic.callbacks.get(user_id)
+                    callback = user.callback
                     if callback is not None:
                         callback([content])
                 else: #Usuário deslogado, adiciona na fila
