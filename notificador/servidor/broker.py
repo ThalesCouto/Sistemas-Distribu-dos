@@ -41,20 +41,22 @@ class BrokerService(rpyc.Service): # type: ignore
 
     # # Handshake
 
-    def exposed_login(self, username: str) -> bool:
+    def exposed_login(self, id: UserId, callback: FnNotify) -> bool:
         #Função de login
-        self.userid = username #Seta o nome de usuário dessa instancia do broker pra ser o do usuário
+        self.userid = id #Seta o nome de usuário dessa instancia do broker pra ser o do usuário
 
-        if username in BrokerService.users.keys():
-            BrokerService.users[username].online = True #Modifica status para online
-            user_id = username
+        if id in BrokerService.users.keys():
+            BrokerService.users[id].online = True #Modifica status para online
+            BrokerService.users[id].callback = callback
+            user_id = id
             # Depois do usuário logar, envia as mensagens na fila
             for topic in BrokerService.topics.values:
                 if user_id in topic.list_subscribers:
                     self.send_queued_messages(topic,user_id) #Envia as mensagens em fila
         else:
-            BrokerService.users[username] = UserInfo(username) #Cria novo usuário
-            BrokerService.users[username].online = True 
+            BrokerService.users[id] = UserInfo(id) #Cria novo usuário
+            BrokerService.users[id].callback = callback
+            BrokerService.users[id].online = True 
 
         return True
 
@@ -106,7 +108,7 @@ class BrokerService(rpyc.Service): # type: ignore
         return True
     # Subscriber operations
 
-    def exposed_subscribe_to(self, id: UserId, topicname: str, callback: FnNotify) -> bool:
+    def exposed_subscribe_to(self, id: UserId, topicname: str) -> bool:
         '''
         Inscreve usuário no interesse de um tópico
             args:
@@ -119,7 +121,7 @@ class BrokerService(rpyc.Service): # type: ignore
             topic = BrokerService.topics[topicname]#(*)
             if id not in topic.list_subscribers:
                 topic.list_subscribers.append(id)
-                topic.callbacks[id] = callback
+
                 return True 
         return False  
 
@@ -135,7 +137,6 @@ class BrokerService(rpyc.Service): # type: ignore
             topic = BrokerService.topics[topicname]#(*)
             if id in topic.list_subscribers:
                 topic.list_subscribers.remove(id)
-                del topic.callbacks[id]
                 return True 
         return False  
 

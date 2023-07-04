@@ -6,4 +6,3 @@ class Topic():
     id: int #ID único
     name: str #Nome do tópico
     list_subscribers: list = [] #Lista de inscritos no tópico
-    callbacks: dict = {}  # Dicionário para armazenar os callbacks dos inscritos
