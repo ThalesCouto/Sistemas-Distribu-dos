@@ -4,7 +4,7 @@ import rpyc
 # Função de callback para receber notificações de novas mensagens
 def callback(novas_mensagens):
     for mensagem in novas_mensagens:
-        print(f"Nova mensagem no tópico {mensagem.topic.name}: {mensagem.data}")
+        print(f"Nova mensagem no tópico {mensagem.topic}: {mensagem.data}")
 
 # Conectar ao serviço do broker
 conn = rpyc.connect("localhost", 8000)

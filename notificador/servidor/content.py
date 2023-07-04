@@ -9,13 +9,13 @@ else:
     from typing_extensions import TypeAlias
     
 if IS_NEW_PYTHON:
-    @dataclass(frozen=True, kw_only=True, slots=True)
+    @dataclass
     class Content:
         author: str
         topic: str
         data: str
 elif not TYPE_CHECKING:
-    @dataclass(frozen=True)
+    @dataclass
     class Content:
         author: str
         topic: str

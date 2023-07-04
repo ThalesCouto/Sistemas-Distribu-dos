@@ -113,7 +113,7 @@ class BrokerService(rpyc.Service): # type: ignore
         if topic is None:
             return False
 
-        content = Content(id, topic, data)
+        content = Content(id, topicname, data)
         for user_id in topic.list_subscribers:
             if user_id in BrokerService.users:
                 user = BrokerService.users[user_id]
