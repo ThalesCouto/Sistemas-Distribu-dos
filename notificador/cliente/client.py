@@ -1,30 +1,39 @@
+
 import rpyc
 
+# Função de callback para receber notificações de novas mensagens
+def callback(novas_mensagens):
+    for mensagem in novas_mensagens:
+        print(f"Nova mensagem no tópico {mensagem.topic.name}: {mensagem.data}")
 
-def login(self, username: str)
-    pass
+# Conectar ao serviço do broker
+conn = rpyc.connect("localhost", 8000)
 
-# Query operations
+# Fazer login como usuário
+id_usuario = "usuario1"
+conn.root.login(id_usuario, callback)
 
-def get_user_info(self, id: UserId)
-    pass
+# Listar os tópicos disponíveis
+topicos = conn.root.list_topics()
+print("Tópicos disponíveis:")
+for topico in topicos:
+    print(topico)
 
-def list_topics(self)
-    pass
-# Publisher operations
+# Inscrever-se em um tópico
+topico_interesse = "esportes"
+inscricao_sucesso = conn.root.subscribe_to(id_usuario, topico_interesse)
+if inscricao_sucesso:
+    print(f"Inscrição no tópico {topico_interesse} realizada com sucesso")
+else:
+    print(f"Falha ao se inscrever no tópico {topico_interesse}")
 
-def publish(self, id: UserId, topic: Topic, data: str)
-    pass
-# Subscriber operations
+# Publicar uma mensagem em um tópico
+mensagem = "Nova mensagem sobre esportes"
+publicacao_sucesso = conn.root.publish(id_usuario, topico_interesse, mensagem)
+if publicacao_sucesso:
+    print("Mensagem publicada com sucesso")
+else:
+    print("Falha ao publicar mensagem")
 
-def subscribe_to(self, id: UserId, topic: Topic, callback: FnNotify)
-    pass
-def unsubscribe_to(self, id: UserId, topic: Topic)
-    pass
-
-
-def subscribe_all(self, id: UserId, callback: FnNotify)
-    pass
-
-def unsubscribe_all(self, id: UserId) -> FnNotify:
-    pass
+# Fazer logout e desconectar do serviço do broker
+conn.close()
