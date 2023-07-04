@@ -35,7 +35,7 @@ class BrokerService(rpyc.Service): # type: ignore
         '''
         Cria novo tópico e adiciona a lista de tópicos
         '''
-        new_topic = Topic(topicname,len(BrokerService.topics)) #############IMPORTANTE!ESTOU USANDO como variável estática porque 
+        new_topic = Topic(len(BrokerService.topics),topicname) #############IMPORTANTE!ESTOU USANDO como variável estática porque 
                                                                 #não sei como funciona o compartilhamento de objetos entre as threads nesse modulo. 
                                                                 # se eles forem capaz de enxergar o mesmo objeto de BrokerService, substituir por self.
                                                                 ################### esses locais estão marcados com #(*)
@@ -67,6 +67,7 @@ class BrokerService(rpyc.Service): # type: ignore
             BrokerService.users[id].online = True #Modifica status para online
             BrokerService.users[id].callback = callback
             user_id = id
+            print(BrokerService.topics.keys())
             # Depois do usuário logar, envia as mensagens na fila
             self.send_queued_messages(user_id) #Envia as mensagens em fila
         else:

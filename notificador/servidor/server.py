@@ -19,8 +19,8 @@ class Server:
                 if len(command_parts) >= 2:
                     topic_name = command_parts[1]
                     broker = self.broker
-                    broker.create_topic(topic_name)
-                    print(f"Topic '{topic_name}' criado.")
+                    topic = broker.create_topic(topic_name)
+                    print(f"Topic '{topic.name}' de id {topic.id} criado.")
                 else:
                     print("Comando inválido. Uso: create_topic <topic_name>")
             else:
