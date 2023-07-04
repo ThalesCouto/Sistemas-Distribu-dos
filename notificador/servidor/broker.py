@@ -20,7 +20,7 @@ class BrokerService(rpyc.Service): # type: ignore
     topics: dict = {} #Chave-valor de tópicos, associa um nome ao objeto tópico com aquele nome
     users: dict = {} #Chave-valor de usuários, associa um nome ao objeto tópico com aquele nome
     # Não é exposed porque só o "admin" tem acesso
-    def create_topic(self, id: UserId, topicname: str) -> Topic:
+    def create_topic(self, topicname: str) -> Topic:
         '''
         Cria novo tópico e adiciona a lista de tópicos
         '''
