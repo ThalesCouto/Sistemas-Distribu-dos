@@ -47,14 +47,14 @@ class BrokerService(rpyc.Service): # type: ignore
 
         if username in BrokerService.users.keys:
             BrokerService.users[username].online = True #Modifica status para online
+            user_id = username
+            # Depois do usuário logar, envia as mensagens na fila
+            for topic in BrokerService.topics.values:
+                if user_id in topic.list_subscribers:
+                    self.send_queued_messages(topic,user_id) #Envia as mensagens em fila
         else:
             BrokerService.users[username] = UserInfo(username) #Cria novo usuário
             BrokerService.users[username].online = True 
-        # Depois do usuário logar, envia as mensagens na fila
-        user_id = username
-        for topic in BrokerService.topics.values:
-            if user_id in topic.list_subscribers:
-                self.send_queued_messages(topic,user_id) #Envia as mensagens em fila
 
         return True
 
@@ -66,7 +66,7 @@ class BrokerService(rpyc.Service): # type: ignore
     # Query operations
 
     def exposed_get_user_info(self, id: UserId) -> UserInfo:
-        if  id in  BrokerService.users.keys:#(*)
+        if id in  BrokerService.users.keys:#(*)
             user = BrokerService.users[id]#(*)
             return user
         else:
@@ -94,14 +94,14 @@ class BrokerService(rpyc.Service): # type: ignore
         content = Content(id, topic, data)
         for user_id in topic.list_subscribers:
             if user_id in BrokerService.users:
-                            user = BrokerService.users[user_id]
-                            if user.online:
-                                # Usuário ta logado, notifica agora
-                                callback = topic.callbacks.get(user_id)
-                                if callback is not None:
-                                    callback([content])
-                            else: #Usuário deslogado, adiciona na fila
-                                BrokerService.users[user_id].fila.append(content)
+                user = BrokerService.users[user_id]
+                if user.online:
+                    # Usuário ta logado, notifica agora
+                    callback = topic.callbacks.get(user_id)
+                    if callback is not None:
+                        callback([content])
+                else: #Usuário deslogado, adiciona na fila
+                    BrokerService.users[user_id].fila.append(content)
 
         return True
     # Subscriber operations

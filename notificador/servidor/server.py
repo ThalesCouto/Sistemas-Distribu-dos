@@ -1,17 +1,29 @@
 from rpyc.utils import server
 import threading
-import broker
+from broker import BrokerService
 from dataclasses import dataclass
 
 class Server:
     def __init__(self,host,porta) -> None:
-        host: str = host
-        porta: int = porta
-        list_brokers: list = []
+        self.host: str = host
+        self.porta: int = porta
+        self.broker: BrokerService = BrokerService()  # Cria uma instancia do broker
+
         
     def monitorar_prompt(self):
-        #TODO integrar monitorar para linkar com a funcao de criar tópicos
-        assert False
+        while True:
+            user_input = input("Insira comando: ")
+            if user_input.startswith("create_topic"):
+                command_parts = user_input.split(" ")
+                if len(command_parts) >= 2:
+                    topic_name = command_parts[1]
+                    broker = self.broker
+                    broker.create_topic(topic_name)
+                    print(f"Topic '{topic_name}' criado.")
+                else:
+                    print("Comando inválido. Uso: create_topic <topic_name>")
+            else:
+                print("Comando inválido.")
 
     def iniciar(self):
         '''
