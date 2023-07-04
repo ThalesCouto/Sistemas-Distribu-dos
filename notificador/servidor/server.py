@@ -18,7 +18,7 @@ class Server:
                 if len(command_parts) >= 2:
                     topic_name = command_parts[1]
                     broker = self.broker
-                    broker.create_topic(topic_name)
+                    broker.create_topic("admin", topic_name)
                     print(f"Topic '{topic_name}' criado.")
                 else:
                     print("Comando inválido. Uso: create_topic <topic_name>")
@@ -35,14 +35,14 @@ class Server:
         thread_prompt.start()
 
         server.ThreadedServer(
-            broker.BrokerService,
+            BrokerService,
             hostname=self.host, port=self.porta,
             protocol_config={'allow_public_attrs': True}
         ).start()
 
 def main():
-    server = Server('localhost',8000)
-    server.iniciar()
+    server_instance  = Server('localhost',8000)
+    server_instance .iniciar()
 
 
 if __name__ == '__main__':

@@ -45,7 +45,7 @@ class BrokerService(rpyc.Service): # type: ignore
         #Função de login
         self.userid = username #Seta o nome de usuário dessa instancia do broker pra ser o do usuário
 
-        if username in BrokerService.users.keys:
+        if username in BrokerService.users.keys():
             BrokerService.users[username].online = True #Modifica status para online
             user_id = username
             # Depois do usuário logar, envia as mensagens na fila
@@ -66,7 +66,7 @@ class BrokerService(rpyc.Service): # type: ignore
     # Query operations
 
     def exposed_get_user_info(self, id: UserId) -> UserInfo:
-        if id in  BrokerService.users.keys:#(*)
+        if id in  BrokerService.users.keys():#(*)
             user = BrokerService.users[id]#(*)
             return user
         else:
@@ -76,7 +76,7 @@ class BrokerService(rpyc.Service): # type: ignore
         '''
         Lista tóicos disponíveis
         '''
-        return BrokerService.topics.keys
+        return BrokerService.topics.keys()
     # Publisher operations
 
     def exposed_publish(self, id: UserId, topicname: str, data: str) -> bool:
@@ -115,11 +115,13 @@ class BrokerService(rpyc.Service): # type: ignore
                 - callback: Função de callback do cliente para notificar
         
         '''
-        if topicname in BrokerService.topics.keys:#(*)
+        if topicname in BrokerService.topics.keys():#(*)
             topic = BrokerService.topics[topicname]#(*)
             if id not in topic.list_subscribers:
                 topic.list_subscribers.append(id)
                 topic.callbacks[id] = callback
+                return True 
+        return False  
 
     def exposed_unsubscribe_to(self, id: UserId, topicname: str) -> bool:
         '''
@@ -129,8 +131,11 @@ class BrokerService(rpyc.Service): # type: ignore
                 - topic: Tópico a ser públicado
         
         '''
-        if topicname in BrokerService.topics.keys:#(*)
+        if topicname in BrokerService.topics.keys():#(*)
             topic = BrokerService.topics[topicname]#(*)
             if id in topic.list_subscribers:
                 topic.list_subscribers.remove(id)
                 del topic.callbacks[id]
+                return True 
+        return False  
+
