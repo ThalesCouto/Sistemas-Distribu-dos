@@ -38,8 +38,7 @@ def printOpcoes():
     print("2 - Inscrever-se em um tópico")
     print("3 - Desinscrever-se de um tópico")
     print("4 - Publicar")
-    print(f"5 - Visualizar mensagens")
-
+    # print("5 - Exibir mensagens")
     try:
         escolha = int(input("\nDigite o número da sua escolha: "))
     except:
@@ -118,8 +117,8 @@ def iniciaRotina():
         # Publicar uma mensagem em um tópico
         if escolha == 4: publicaTopico()
 
-        # Imprime as mensagens
-        if escolha == 5: printMensagens()
+        # # Imprime as mensagens
+        # if escolha == 5: printMensagens()
 
         else:
             print("Opcao nao Reconhecida")
