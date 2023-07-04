@@ -3,10 +3,18 @@ import rpyc
 from topic import Topic
 from user import UserInfo
 from content import Content
-from typing import Callable, Optional, Tuple, TypeAlias
+from typing import Callable, TYPE_CHECKING, TypeAlias
 from dataclasses import dataclass
 from fila import Fila
 import rpyc # type: ignore
+import sys
+
+IS_NEW_PYTHON: bool = sys.version_info >= (3, 8)
+if IS_NEW_PYTHON:
+    from typing import TypeAlias
+else:
+    from typing_extensions import TypeAlias
+    
 
 UserId: TypeAlias = str
 
@@ -14,8 +22,11 @@ UserId: TypeAlias = str
 # Aqui pode ser uma função que recebe apenas um Tuple[Topic, Content]
 # ou seja:
 # FnNotify: TypeAlias = Callable[[Tuple[Topic, Content]], None]
-FnNotify: TypeAlias = Callable[[list[Content]], None]
-
+if IS_NEW_PYTHON:
+    FnNotify: TypeAlias = Callable[[list[Content]], None]
+elif not TYPE_CHECKING:
+    FnNotify: TypeAlias = Callable
+    
 class BrokerService(rpyc.Service): # type: ignore
     topics: dict = {} #Chave-valor de tópicos, associa um nome ao objeto tópico com aquele nome
     users: dict = {} #Chave-valor de usuários, associa um nome ao objeto tópico com aquele nome
@@ -59,8 +70,7 @@ class BrokerService(rpyc.Service): # type: ignore
             # Depois do usuário logar, envia as mensagens na fila
             self.send_queued_messages(user_id) #Envia as mensagens em fila
         else:
-            BrokerService.users[id] = UserInfo(id) #Cria novo usuário
-            BrokerService.users[id].callback = callback
+            BrokerService.users[id] = UserInfo(id,callback) #Cria novo usuário
             BrokerService.users[id].online = True 
 
         return True

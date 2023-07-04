@@ -2,6 +2,7 @@ from rpyc.utils import server
 import threading
 from broker import BrokerService
 from dataclasses import dataclass
+from topic import Topic
 
 class Server:
     def __init__(self,host,porta) -> None:

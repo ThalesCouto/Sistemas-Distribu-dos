@@ -1,8 +1,7 @@
-from dataclasses import dataclass
-from fila import Fila
+from typing import List
 
-@dataclass
 class Topic():
-    id: int #ID único
-    name: str #Nome do tópico
-    list_subscribers: list = [] #Lista de inscritos no tópico
+    def __init__(self,id,name):
+        self.id: int  = id#ID único
+        self.name: str = name#Nome do tópico
+        self.list_subscribers: List[str] = []
