@@ -82,7 +82,7 @@ class BrokerService(rpyc.Service): # type: ignore
         else:
             return None #TODO Decidir o que retornar em caso de inexistencia
 
-    def exposed_list_topics(self) -> list[Topic]:
+    def exposed_list_topics(self) -> list[str]:
         '''
         Lista tóicos disponíveis
         '''
