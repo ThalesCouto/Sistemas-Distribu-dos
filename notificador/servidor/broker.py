@@ -50,9 +50,9 @@ class BrokerService(rpyc.Service): # type: ignore
         user = BrokerService.users[subscriber_id]
         callback = user.callback
         if callback is not None:
-            queued_messages = BrokerService.users[subscriber_id].fila #Recupera mensagens na fila do usuário
+            queued_messages = user.fila.obter_todas_mensagem() #Recupera mensagens na fila do usuário
             callback(queued_messages) #Chama o callback daquele tópico
-            BrokerService.users[subscriber_id].limpar_fila() #Esvazia a fila
+            user.fila.limpar_fila() #Esvazia a fila
 
     # # Handshake
 
@@ -62,10 +62,12 @@ class BrokerService(rpyc.Service): # type: ignore
         '''
         #Função de login
         self.userid = id #Seta o nome de usuário dessa instancia do broker pra ser o do usuário
+
         #checa se o usuário já esta cadastrado
         if id in BrokerService.users.keys():
-            BrokerService.users[id].online = True #Modifica status para online
-            BrokerService.users[id].callback = callback
+            user = BrokerService.users[id]
+            user.online = True #Modifica status para online
+            user.callback = callback
             user_id = id
             print(BrokerService.topics.keys())
             # Depois do usuário logar, envia as mensagens na fila
@@ -123,7 +125,7 @@ class BrokerService(rpyc.Service): # type: ignore
                     if callback is not None:
                         callback([content])
                 else: #Usuário deslogado, adiciona na fila
-                    BrokerService.users[user_id].fila.append(content)
+                    BrokerService.users[user_id].fila.adicionar_mensagem(content)
 
         return True
     # Subscriber operations
